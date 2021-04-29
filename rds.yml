@@ -1,0 +1,86 @@
+Parameters:
+
+  VPC:
+    Type: AWS::EC2::VPC::Id
+
+  EcsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+
+  DBInstanceClass:
+    Type: String
+    Default: db.t2.micro
+    AllowedValues:
+      - db.t3.micro
+      - db.t3.small
+      - db.t3.medium
+      - db.t3.large
+      - db.t3.xlarge
+      - db.t3.2xlarge
+      - db.t2.micro
+      - db.t2.small
+      - db.t2.medium
+      - db.t2.large
+      - db.t2.xlarge
+      - db.t2.2xlarge	
+
+  Engine:
+    Type: String
+    Default: postgres
+    AllowedValues:
+      - postgres
+
+  DBName:
+    Type: String
+    Default: kong
+
+  MasterUsername:
+    Type: String
+    Default: postgres
+
+  MasterUserPassword:
+    Type: String
+    Default: postgrespostgres
+
+  PrivateSubnets:
+    Description: Choose which Subnets this RDS Instance will be deployed to.
+    Type: List<AWS::EC2::Subnet::Id>
+
+
+Resources:
+
+  DBSG:
+    Type: AWS::RDS::DBSecurityGroup
+    Properties: 
+      GroupDescription: Database SG
+      DBSecurityGroupIngress:
+        - EC2SecurityGroupId: !Ref EcsSecurityGroup
+      EC2VpcId: !Ref VPC
+
+  PostgresDBRDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBSecurityGroups: [!Ref DBSG]
+      AllocatedStorage: '10'
+      DBInstanceClass: !Sub '${DBInstanceClass}'
+      Engine: !Sub '${Engine}'
+      DBName: !Sub '${DBName}'
+      MasterUsername: !Sub '${MasterUsername}'
+      MasterUserPassword: !Sub '${MasterUserPassword}'
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref PostgresDBRDSInstanceSubnetGroup
+    DeletionPolicy: Snapshot
+
+  PostgresDBRDSInstanceSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupDescription: wk-dbsngd
+      DBSubnetGroupName: wk-dbsng
+      SubnetIds: !Ref PrivateSubnets
+    
+Outputs:
+  PostgresDBRDSInstance:
+    Description: A reference to the created Postgres RDS Instance.
+    Value: !Ref PostgresDBRDSInstance
+  PostgresDBRDSInstanceEndPoint:
+    Description: A reference to the created Postgres RDS Instance.
+    Value: !GetAtt PostgresDBRDSInstance.Endpoint.Address

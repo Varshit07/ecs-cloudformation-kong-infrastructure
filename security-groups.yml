@@ -1,0 +1,56 @@
+Parameters:
+
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: Choose which VPC the security groups to deploy to
+
+Resources:
+
+  ApplicationLoadBalancerSG:
+      Type: AWS::EC2::SecurityGroup
+      Properties: 
+        GroupDescription: Application Load Balancer SG
+        GroupName: ALBSG
+        SecurityGroupIngress: 
+          - IpProtocol: tcp
+            FromPort: 8000
+            ToPort: 8001
+            CidrIp: 0.0.0.0/0
+        VpcId: !Ref VPC
+    
+  EcsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS Security Group
+      GroupName: ECSSG
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '31000'
+        ToPort: '65535'
+        SourceSecurityGroupId: !Ref ApplicationLoadBalancerSG
+
+  EcsSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: '31000'
+      ToPort: '65535'
+      SourceSecurityGroupId: !Ref EcsSecurityGroup 
+      GroupId: !Ref EcsSecurityGroup
+              
+  
+
+Outputs:
+  ApplicationLoadBalancerSG:
+    Description: A reference to the Security Group for Load Balancer.
+    Value: !Ref ApplicationLoadBalancerSG
+
+  EcsSecurityGroup:
+    Description: A reference to the Security Group for ECS EC2 Instance(s).
+    Value: !Ref EcsSecurityGroup
+

@@ -1,0 +1,65 @@
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://witchking-n9.s3.amazonaws.com/folder1/folder2/folder3/vpc.yml
+      Parameters:
+        VpcCIDR: 10.0.0.0/16
+        PublicSubnet1CIDR: 10.0.1.0/24
+        PublicSubnet2CIDR: 10.0.2.0/24
+        PublicSubnet3CIDR: 10.0.3.0/24
+        PrivateSubnet1CIDR: 10.0.4.0/24
+        PrivateSubnet2CIDR: 10.0.5.0/24
+        PrivateSubnet3CIDR: 10.0.6.0/24
+
+  SecurityGroups:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://witchking-n9.s3.amazonaws.com/folder1/folder2/folder3/security-groups.yml
+      Parameters:
+        VPC: !GetAtt VPC.Outputs.VPC
+
+  RDSInstance:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://witchking-n9.s3.amazonaws.com/folder1/folder2/folder3/rds.yml
+      Parameters:
+        VPC: !GetAtt VPC.Outputs.VPC
+        EcsSecurityGroup: !GetAtt SecurityGroups.Outputs.EcsSecurityGroup
+        DBInstanceClass: db.t2.micro 
+        Engine: postgres
+        DBName: kong
+        MasterUsername: postgres
+        MasterUserPassword: postgrespostgres
+        PrivateSubnets: !GetAtt VPC.Outputs.PrivateSubnets
+
+  ApplicationLoadBalancer:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://witchking-n9.s3.amazonaws.com/folder1/folder2/folder3/alb.yml
+      Parameters:
+        NameOfApplicationLoadBalancer: wk-alb
+        VPC: !GetAtt VPC.Outputs.VPC
+        PublicSubnets: !GetAtt VPC.Outputs.PublicSubnets
+        ApplicationLoadBalancerSG: !GetAtt SecurityGroups.Outputs.ApplicationLoadBalancerSG
+
+  ECSCluster:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://witchking-n9.s3.amazonaws.com/folder1/folder2/folder3/ecs.yml
+      Parameters:
+        ClusterName: Witchking-Cluster
+        KeyName: witchking-us-east
+        InstanceType: t3.small
+        ClusterSize: 3
+        VPC: !GetAtt VPC.Outputs.VPC
+        PrivateSubnets: !GetAtt VPC.Outputs.PrivateSubnets
+        ECSAMI: /aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id
+        EcsSecurityGroup: !GetAtt SecurityGroups.Outputs.EcsSecurityGroup
+        KongUserTargetGroupARN: !GetAtt ApplicationLoadBalancer.Outputs.KongUserTargetGroup
+        KongAdminTargetGroupARN: !GetAtt ApplicationLoadBalancer.Outputs.KongAdminTargetGroup
+        PostgresDBRDSInstanceEndpoint: !GetAtt RDSInstance.Outputs.PostgresDBRDSInstanceEndPoint
+        KongDBType: postgres
+        KongDBUser: postgres
+        KongDBPassword: postgrespostgres
+        KongDBName: kong

@@ -1,0 +1,309 @@
+Parameters:
+  ClusterName:
+    Type: String
+    Description: Name of ECS Cluster
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the ECS instances
+
+  InstanceType:
+    Type: String
+    Description: EC2 Instance type to build the ECS cluster.
+    Default: t3.small
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t3.small
+      - t3.medium
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+    ConstraintDescription: Please choose a valid instance type.
+
+  ClusterSize:
+    Type: Number
+    Description: The number of ECS hosts to be deployed initially. 
+    Default: 3
+
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC to deploy the ECS Cluster.
+
+  PrivateSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Private Subnets ECS Cluster will be deployed to.
+  
+  ECSAMI:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Description: ECS-Optimized AMI ID
+    Default: /aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id
+
+  EcsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+
+  KongUserTargetGroupARN:
+    Type: String
+
+  KongAdminTargetGroupARN:
+    Type: String
+
+  PostgresDBRDSInstanceEndpoint:
+    Type: String
+
+  KongDBType:
+    Type: String
+    Description: Postgres DB Mode for Kong
+    Default: postgres
+
+  KongDBUser:
+    Type: String
+    Description: Postgres DB User for Kong
+    Default: postgres
+
+  KongDBPassword:
+    Type: String
+    Description: Postgres DB Password for Kong
+    Default: postgrespostgres
+
+  KongDBName:
+    Type: String
+    Description: Postgres DB Name for Kong
+    Default: kong
+
+
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub '${ClusterName}'
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      RoleName: !Sub ${AWS::StackName}-task-role
+      Path: /
+
+  TaskDefinition1:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: kong
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+      - Name: kong
+        Essential: 'true'
+        Image: 492266378106.dkr.ecr.us-east-1.amazonaws.com/kong
+        MemoryReservation: '512'
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: !Ref KongLogGroup
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: kong
+        PortMappings:
+        - ContainerPort: 8000
+        - ContainerPort: 8001
+        Environment:
+        - Name: KONG_DATABASE
+          Value: !Sub '${KongDBType}'
+        - Name: KONG_PG_HOST 
+          Value: !Sub '${PostgresDBRDSInstanceEndpoint}'
+        - Name: KONG_PG_USER
+          Value: !Sub '${KongDBUser}'
+        - Name: KONG_PG_PASSWORD
+          Value: !Sub '${KongDBPassword}'
+        - Name: KONG_PG_DATABASE
+          Value: !Sub '${KongDBName}'
+        - Name: KONG_ADMIN_LISTEN
+          Value: 0.0.0.0:8001
+        - Name: KONG_MIGRATE
+          Value: 'yes'
+
+  Service1:
+    Type: AWS::ECS::Service
+    Properties: 
+      Cluster: !Ref ECSCluster
+      DesiredCount: 1
+      EnableExecuteCommand: true
+      HealthCheckGracePeriodSeconds: 30
+      LaunchType: EC2
+      LoadBalancers: 
+        - ContainerName: kong
+          ContainerPort: 8000
+          TargetGroupArn: !Ref KongUserTargetGroupARN
+        - ContainerName: kong
+          ContainerPort: 8001
+          TargetGroupArn: !Ref KongAdminTargetGroupARN
+      SchedulingStrategy: REPLICA
+      ServiceName: kong-service
+      TaskDefinition: !Ref TaskDefinition1
+
+  TaskDefinition2:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: node
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+      - Name: node
+        Essential: 'true'
+        Image: 492266378106.dkr.ecr.us-east-1.amazonaws.com/node:latest
+        Memory: '256'
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: !Ref NodeLogGroup
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: node
+        PortMappings:
+        - ContainerPort: 3000
+
+  Service2:
+    Type: AWS::ECS::Service
+    Properties: 
+      Cluster: !Ref ECSCluster
+      DesiredCount: 2
+      EnableExecuteCommand: true
+      LaunchType: EC2
+      SchedulingStrategy: REPLICA
+      ServiceName: node-service
+      TaskDefinition: !Ref TaskDefinition2
+      ServiceRegistries:
+      - RegistryArn: !GetAtt DiscoveryService.Arn
+        ContainerName: node
+        ContainerPort: 3000
+
+  NodeLogGroup: 
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: node-log-group
+      RetentionInDays: 365
+
+  KongLogGroup: 
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: kong-log-group
+      RetentionInDays: 365
+
+  ECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier: !Ref PrivateSubnets
+      LaunchConfigurationName: !Ref ContainerInstances
+      MinSize: '1'
+      MaxSize: '3'
+      DesiredCapacity: !Ref ClusterSize
+      Tags:
+        - Key: Name
+          PropagateAtLaunch: true 
+          Value: !Sub "FromECSCluster-${ECSCluster}"
+
+  ContainerInstances:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      AssociatePublicIpAddress: false
+      ImageId: !Ref ECSAMI
+      SecurityGroups: [!Ref EcsSecurityGroup]
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      KeyName: !Ref KeyName
+      LaunchConfigurationName: !Sub '${ClusterName}LC'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
+
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ec2.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: [ 'ec2:DescribeTags',
+                'ecs:CreateCluster',
+                'ecs:DeregisterContainerInstance',
+                'ecs:DiscoverPollEndpoint',
+                'ecs:Poll',
+                'ecs:RegisterContainerInstance',
+                'ecs:StartTelemetrySession',
+                'ecs:UpdateContainerInstancesState',
+                'ecs:Submit*',
+                'ecr:GetAuthorizationToken',
+                'ecr:BatchCheckLayerAvailability',
+                'ecr:GetDownloadUrlForLayer',
+                'ecr:BatchGetImage',
+                'logs:CreateLogStream',
+                'logs:PutLogEvents']
+            Resource: '*'
+  
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles: [!Ref EC2Role]
+
+  PrivateNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+        Name: api-app.com
+        Vpc: !Ref VPC
+
+  DiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties: 
+      Description: Discovery Service for the API Container
+      DnsConfig:
+        RoutingPolicy: MULTIVALUE
+        DnsRecords:
+          - TTL: 60
+            Type: SRV
+      HealthCheckCustomConfig: 
+        FailureThreshold: 1
+      Name: node-service
+      NamespaceId: !Ref PrivateNamespace

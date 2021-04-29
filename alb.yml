@@ -1,0 +1,92 @@
+Parameters:
+
+  NameOfApplicationLoadBalancer:
+    Type: String
+
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: Choose which VPC the application load balancer to deploy to
+
+  PublicSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Choose the public subnets where Application Load Balancer will be deployed in.
+
+  ApplicationLoadBalancerSG:
+    Type: AWS::EC2::SecurityGroup::Id
+    
+
+Resources:
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Subnets: !Ref PublicSubnets
+      Scheme: internet-facing
+      Name: !Sub '${NameOfApplicationLoadBalancer}'
+      IpAddressType: ipv4
+      SecurityGroups: [!Ref ApplicationLoadBalancerSG]
+
+  KongUserTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      Matcher: 
+        HttpCode: 200,404
+      Name: kong-user-tg
+      Port: 8000
+      Protocol: HTTP
+      VpcId: !Ref VPC
+
+  KongAdminTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      Matcher: 
+        HttpCode: 200
+      Name: kong-admin-tg
+      Port: 8001
+      Protocol: HTTP
+      VpcId: !Ref VPC
+  
+  Listener1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref KongUserTargetGroup
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: '8000'
+      Protocol: HTTP
+
+  Listener2:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref KongAdminTargetGroup
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: '8001'
+      Protocol: HTTP
+
+Outputs:
+  ApplicationLoadBalancerDNSName:
+    Description: DNS Name of deployed Application Load Balancer
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
+
+  KongUserTargetGroup:
+    Description: Reference to Kong User Target Group
+    Value: !Ref KongUserTargetGroup
+
+  KongAdminTargetGroup:
+    Description: Reference to Kong Admin Target Group
+    Value: !Ref KongAdminTargetGroup
