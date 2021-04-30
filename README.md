@@ -15,7 +15,7 @@ Kong Container uses Postgres database to store registered APIs, plugins, and con
 The Kong Container also interacts with API Container to serve the API requests to user(s).
 
 ## APIs
-[See the APIs](./Api/app.js "See the APIs")
+[See the APIs](./Api/app.js "See the APIs")\
 [See the Dockerfile for API Container's Image](./Api/Dockerfile "See the Dockerfile for API Container's Image")
 ## CloudFormation Templates
 
