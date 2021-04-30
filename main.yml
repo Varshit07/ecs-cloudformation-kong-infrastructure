@@ -2,7 +2,7 @@ Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://witchking-n9.s3.amazonaws.com/folder1/folder2/folder3/vpc.yml
+      TemplateURL: <<URL of vpc.yml>>
       Parameters:
         VpcCIDR: 10.0.0.0/16
         PublicSubnet1CIDR: 10.0.1.0/24
@@ -15,14 +15,14 @@ Resources:
   SecurityGroups:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://witchking-n9.s3.amazonaws.com/folder1/folder2/folder3/security-groups.yml
+      TemplateURL:<<URL of security-groups.yml>>
       Parameters:
         VPC: !GetAtt VPC.Outputs.VPC
 
   RDSInstance:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://witchking-n9.s3.amazonaws.com/folder1/folder2/folder3/rds.yml
+      TemplateURL: <<URL of rds.yml>>
       Parameters:
         VPC: !GetAtt VPC.Outputs.VPC
         EcsSecurityGroup: !GetAtt SecurityGroups.Outputs.EcsSecurityGroup
@@ -36,7 +36,7 @@ Resources:
   ApplicationLoadBalancer:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://witchking-n9.s3.amazonaws.com/folder1/folder2/folder3/alb.yml
+      TemplateURL: <<URL of alb.yml>>
       Parameters:
         NameOfApplicationLoadBalancer: wk-alb
         VPC: !GetAtt VPC.Outputs.VPC
@@ -46,7 +46,7 @@ Resources:
   ECSCluster:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://witchking-n9.s3.amazonaws.com/folder1/folder2/folder3/ecs.yml
+      TemplateURL: <<URL of ecs.yml>>
       Parameters:
         ClusterName: Witchking-Cluster
         KeyName: witchking-us-east
