@@ -4,12 +4,16 @@ This project contains the CloudFormation templates to deploy a Kong API Gateway 
 
 ## Infrastructure
 ![Infrastructure Diagram](./images/Project1-Infrastructure.png)
-The Kong API Gateway container and API containers are deployed in private subnets. The Postgres RDS Instance needed for Kong is also deployed in private subnets.
-The Application Load Balancer is deployed across 3 Public Subnets in 3 different availability zones for High Availabilty. The Kong Container is the target group for Application Load Balancer.
-The API Containers are using ECS Service Discovery
+The Kong API Gateway container and API containers are deployed in private subnets. The Postgres RDS Instance needed for Kong is also deployed in private subnets. The images needed for the containers are stored in Elastic Container Registry.\
+The Application Load Balancer is deployed across 3 Public Subnets in 3 different availability zones for High Availability. The Kong Container is the target group for Application Load Balancer.\
+The API Containers are using ECS Service Discovery because the Kong API Gateway container needs to know the URL of API Containers. So by enabling Service Discovery, a static endpoint can be used to facilitate the discovery of new services(APIs).
 
-## Application Diagram
+## Application
 ![Application Diagram](./images/Project1-Application.png)
+The Kong Container listens on 8000 port for general users to access the APIs. The Kong Container listens on 8001 port for admin user to create services, create routes, enable plugins, etc.\
+Kong Container uses Postgres database to store registered APIs, plugins, and consumers.
+The Kong Container also interacts with API Container to serve the API requests.
+
 
 ## CloudFormation Templates
 
