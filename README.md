@@ -10,11 +10,13 @@ The API Containers are using ECS Service Discovery because the Kong API Gateway 
 
 ## Application
 ![Application Diagram](./images/Project1-Application.png)
-The Kong Container listens on 8000 port for general users to access the APIs. The Kong Container listens on 8001 port for admin user to create services, create routes, enable plugins, etc.\
-Kong Container uses Postgres database to store registered APIs, plugins, and consumers.
-The Kong Container also interacts with API Container to serve the API requests.
+The Kong Container listens on `8000` port for general users to access the APIs. The Kong Container listens on `8001` port for admin user to create services, create routes, enable plugins, etc.\
+Kong Container uses Postgres database to store registered APIs, plugins, and consumers.\
+The Kong Container also interacts with API Container to serve the API requests to user(s).
 
-
+## APIs
+[See the APIs](./Api/app.js "See the APIs")
+[See the Dockerfile for API Container's Image](./Api/Dockerfile "See the Dockerfile for API Container's Image")
 ## CloudFormation Templates
 
 - **Main Stack:** Deploys VPC Stack, Security Groups Stack, RDS Stack, Application Load Balancer Stack, ECS Stack
