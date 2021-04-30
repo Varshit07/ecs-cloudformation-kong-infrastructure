@@ -49,7 +49,7 @@ curl --location --request POST 'http:<<host>>:8001/services' \
 
 ### Create Routes
 ```bash
-curl --location --request POST 'http://localhost:8001/services/microservice-apis/routes' \
+curl --location --request POST 'http://<<HOST>>:8001/services/microservice-apis/routes' \
 --form 'hosts[]="microservice-apis"'
 ```
 
@@ -124,7 +124,7 @@ The expected HTTP Response for the above HTTP Request is with HTTP Response `Sta
 #### Test an API with incorrect API Key
 
 ```bash
-curl --location --request GET 'http://localhost:8000/api1' \
+curl --location --request GET 'http://<<HOST>>:8000/api1' \
 --header 'host: microservice-apis' \
 --header 'apikey: qweasdzxcfdsdaf'
 ```
@@ -158,7 +158,7 @@ curl --location --request POST 'http://<<HOST>>:8001/consumers/random-user/basic
 
 #### Test an API with incorrect credentials
 ```bash
-curl --location --request GET 'http://localhost:8000/api1' \
+curl --location --request GET 'http://<<HOST>>:8000/api1' \
 --header 'host: microservice-apis' \
 --header 'Authorization: Basic YWdvb2R1c2VybmFtZTphc3Ryb25ncGFzc3dvcmRm'
 ```
