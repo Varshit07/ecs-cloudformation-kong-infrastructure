@@ -19,7 +19,7 @@ The Kong Container also interacts with API Container to serve the API requests t
 [See the Dockerfile for API Container's Image](./Api/Dockerfile "See the Dockerfile for API Container's Image")
 ## CloudFormation Templates
 
-- **Main Stack:** Deploys VPC Stack, Security Groups Stack, RDS Stack, Application Load Balancer Stack, ECS Stack
+**Main Stack:** Deploys VPC Stack, Security Groups Stack, RDS Stack, Application Load Balancer Stack, ECS Stack
     - **VPC Stack:** Deploys a VPC, 3 Public Subnets, 3 Private Subnets, 1 Public Route Table, 1 Private Route Table, 1 NAT Gateway, 1 Internet Gateway
     - **Security Groups Stack:** Deploys Security Groups for ECS EC2 Instances, Application Load Balancer
     - **RDS Stack:** Deploys RDS Instance, Security Group for RDS Instance, And DBSubnetGroup
@@ -33,7 +33,7 @@ The Kong Container also interacts with API Container to serve the API requests t
 - Step 4: Deploy the `main.yml` stack on CloudFormation
 - Step 5 (Optional): Create a Route53 record to route traffic to Application Load Balancer and use the Route 53 record to interact with Kong API Gateway
 
-## Configure Kong API Gateway
+## Using Kong API Gateway
 ### Test Kong Admin API is working
 
 ```bash
