@@ -20,11 +20,11 @@ The Kong Container also interacts with API Container to serve the API requests t
 ## CloudFormation Templates
 
 **Main Stack:** Deploys VPC Stack, Security Groups Stack, RDS Stack, Application Load Balancer Stack, ECS Stack
-    - **VPC Stack:** Deploys a VPC, 3 Public Subnets, 3 Private Subnets, 1 Public Route Table, 1 Private Route Table, 1 NAT Gateway, 1 Internet Gateway
-    - **Security Groups Stack:** Deploys Security Groups for ECS EC2 Instances, Application Load Balancer
-    - **RDS Stack:** Deploys RDS Instance, Security Group for RDS Instance, And DBSubnetGroup
-    - **ALB Stack:** Deploys Application Load Balancer, Target Groups and Listeners
-    - **ECS Stack:** Deploys ECS Cluster, 2 Task Definitions, 2 Services, CloudWatch Log Groups, Service Registry and Private Namespace for Service Discovery, EC2 Instances, Launch Configuration, AutoScaling Group, Roles needed for resources (2 services- Kong API Gateway, Node App for APIs)
+- **VPC Stack:** Deploys a VPC, 3 Public Subnets, 3 Private Subnets, 1 Public Route Table, 1 Private Route Table, 1 NAT Gateway, 1 Internet Gateway
+- **Security Groups Stack:** Deploys Security Groups for ECS EC2 Instances, Application Load Balancer
+- **RDS Stack:** Deploys RDS Instance, Security Group for RDS Instance, And DBSubnetGroup
+- **ALB Stack:** Deploys Application Load Balancer, Target Groups and Listeners
+- **ECS Stack:** Deploys ECS Cluster, 2 Task Definitions, 2 Services, CloudWatch Log Groups, Service Registry and Private Namespace for Service Discovery, EC2 Instances, Launch Configuration, AutoScaling Group, Roles needed for resources (2 services- Kong API Gateway, Node App for APIs)
 
 ## Instructions to use the  template to deploy the infrastructure
 - Step 1: Customize the parameters in the templates according to your requirement
