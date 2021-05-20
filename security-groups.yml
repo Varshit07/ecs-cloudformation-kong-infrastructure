@@ -1,3 +1,6 @@
+Description: >
+  Deploys Security Groups for ECS EC2 Instances, Application Load Balancer
+
 Parameters:
 
   VPC:

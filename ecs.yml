@@ -1,3 +1,6 @@
+Description: >
+  Deploys ECS Cluster, 2 Task Definitions, 2 Services, CloudWatch Log Groups, Service Registry and Private Namespace for Service Discovery, EC2 Instances, Launch Configuration, AutoScaling Group, Roles needed for resources (2 services- Kong API Gateway, Node App for APIs).
+
 Parameters:
   ClusterName:
     Type: String
@@ -128,7 +131,7 @@ Resources:
       ContainerDefinitions:
       - Name: kong
         Essential: 'true'
-        Image: 492266378106.dkr.ecr.us-east-1.amazonaws.com/kong
+        Image: 492266378106.dkr.ecr.us-west-2.amazonaws.com/kong:latest
         MemoryReservation: '512'
         LogConfiguration:
           LogDriver: awslogs
@@ -182,7 +185,7 @@ Resources:
       ContainerDefinitions:
       - Name: node
         Essential: 'true'
-        Image: 492266378106.dkr.ecr.us-east-1.amazonaws.com/node:latest
+        Image: 492266378106.dkr.ecr.us-west-2.amazonaws.com/node:latest
         Memory: '256'
         LogConfiguration:
           LogDriver: awslogs

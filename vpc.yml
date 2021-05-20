@@ -1,3 +1,6 @@
+Description: >
+  Deploys a VPC, 3 Public Subnets, 3 Private Subnets, 1 Public Route Table, 1 Private Route Table, 1 NAT Gateway, 1 Internet Gateway
+
 Parameters:
       
   VpcCIDR:
@@ -56,7 +59,9 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref PublicSubnet1CIDR
-      AvailabilityZone: us-east-1a
+      AvailabilityZone: !Select 
+      - 0
+      - Fn::GetAZs: !Ref 'AWS::Region'
       Tags:
         - Key: Name
           Value: witchking-public-subnet-1
@@ -66,7 +71,9 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref PublicSubnet2CIDR
-      AvailabilityZone: us-east-1b
+      AvailabilityZone: !Select 
+      - 1
+      - Fn::GetAZs: !Ref 'AWS::Region'
       Tags:
         - Key: Name
           Value: witchking-public-subnet-2
@@ -76,7 +83,9 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref PublicSubnet3CIDR
-      AvailabilityZone: us-east-1c
+      AvailabilityZone: !Select 
+      - 2
+      - Fn::GetAZs: !Ref 'AWS::Region'
       Tags:
         - Key: Name
           Value: witchking-public-subnet-3
@@ -86,7 +95,9 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref PrivateSubnet1CIDR
-      AvailabilityZone: us-east-1a
+      AvailabilityZone: !Select 
+      - 0
+      - Fn::GetAZs: !Ref 'AWS::Region'
       Tags:
         - Key: Name
           Value: witchking-private-subnet-1
@@ -96,7 +107,9 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref PrivateSubnet2CIDR
-      AvailabilityZone: us-east-1b
+      AvailabilityZone: !Select 
+      - 1
+      - Fn::GetAZs: !Ref 'AWS::Region'
       Tags:
         - Key: Name
           Value: witchking-private-subnet-2
@@ -106,7 +119,9 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref PrivateSubnet3CIDR
-      AvailabilityZone: us-east-1c
+      AvailabilityZone: !Select 
+      - 2
+      - Fn::GetAZs: !Ref 'AWS::Region'
       Tags:
         - Key: Name
           Value: witchking-private-subnet-3

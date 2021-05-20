@@ -1,8 +1,12 @@
+Description: >
+  CloudFormation Template w/ nested stacks to deploy a Kong API Gateway container in a ECS Cluster. Also deploys vpc, application load balancer, postgres rds instance.
+
 Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: <<URL of vpc.yml>>
+      # Change template URL here ⬇
+      TemplateURL: https://gladiatordevto.s3.amazonaws.com/folder1/folder2/folder3/folder4/folder5/folder6/folder7/folder8/folder9/folder10/folder11/folder12/vpc.yml
       Parameters:
         VpcCIDR: 10.0.0.0/16
         PublicSubnet1CIDR: 10.0.1.0/24
@@ -15,14 +19,16 @@ Resources:
   SecurityGroups:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL:<<URL of security-groups.yml>>
+      # Change template URL here ⬇
+      TemplateURL: https://gladiatordevto.s3.amazonaws.com/folder1/folder2/folder3/folder4/folder5/folder6/folder7/folder8/folder9/folder10/folder11/folder12/security-groups.yml
       Parameters:
         VPC: !GetAtt VPC.Outputs.VPC
 
   RDSInstance:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: <<URL of rds.yml>>
+      # Change template URL here ⬇
+      TemplateURL: https://gladiatordevto.s3.amazonaws.com/folder1/folder2/folder3/folder4/folder5/folder6/folder7/folder8/folder9/folder10/folder11/folder12/rds.yml
       Parameters:
         VPC: !GetAtt VPC.Outputs.VPC
         EcsSecurityGroup: !GetAtt SecurityGroups.Outputs.EcsSecurityGroup
@@ -36,7 +42,8 @@ Resources:
   ApplicationLoadBalancer:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: <<URL of alb.yml>>
+      # Change template URL here ⬇
+      TemplateURL: https://gladiatordevto.s3.amazonaws.com/folder1/folder2/folder3/folder4/folder5/folder6/folder7/folder8/folder9/folder10/folder11/folder12/alb.yml
       Parameters:
         NameOfApplicationLoadBalancer: wk-alb
         VPC: !GetAtt VPC.Outputs.VPC
@@ -46,10 +53,11 @@ Resources:
   ECSCluster:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: <<URL of ecs.yml>>
+      # Change template URL here ⬇
+      TemplateURL: https://gladiatordevto.s3.amazonaws.com/folder1/folder2/folder3/folder4/folder5/folder6/folder7/folder8/folder9/folder10/folder11/folder12/ecs.yml
       Parameters:
         ClusterName: Witchking-Cluster
-        KeyName: witchking-us-east
+        KeyName: witchking-us-west
         InstanceType: t3.small
         ClusterSize: 3
         VPC: !GetAtt VPC.Outputs.VPC

@@ -1,3 +1,6 @@
+Description: >
+  Deploys RDS Instance, Security Group for RDS Instance, And DBSubnetGroup
+
 Parameters:
 
   VPC:

@@ -1,3 +1,6 @@
+Description: >
+  Deploys Application Load Balancer, Target Groups and Listeners
+
 Parameters:
 
   NameOfApplicationLoadBalancer:
